@@ -129,9 +129,7 @@ def twitter():
 
                     # mean
                     vader_mean = dfVO["vader_compound"].mean()
-                    vader_mean_slider = st.slider(
-                        '-1.00: Negative, 0.00: Neutral, 1.00: Positive',
-                        -1.00, 1.00, value=vader_mean)
+                    vader_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=vader_mean)
                     st.write('Total Sentiment: ', vader_mean_slider)
                     
                     #results
