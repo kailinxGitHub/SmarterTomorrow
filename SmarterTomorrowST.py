@@ -198,27 +198,27 @@ def twitter():
                     dfRO = pd.DataFrame(dfR, columns = ['roberta_compound', 'roberta_neg', 'roberta_neu', 'roberta_pos', 'tweet_text'])
                     st.write(dfRO.head())
 
-                    # RoBERTa compound mean
-                    roberta_mean = dfRO["roberta_compound"].mean()
-                    roberta_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=roberta_mean)
-                    st.write('Total Sentiment: ', roberta_mean_slider)
+                    # # RoBERTa compound mean
+                    # roberta_mean = dfRO["roberta_compound"].mean()
+                    # roberta_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=roberta_mean)
+                    # st.write('Total Sentiment: ', roberta_mean_slider)
                     
-                    #results
-                    roberta_mean_str = str(roberta_mean)
-                    roberta_cut_str = roberta_mean_str[:6]
-                    st.warning("This is not a Financial Advisor")
-                    if roberta_mean <= -0.5:
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("It's very likely that the company value will soon been DECREASING at a rapid rate!!! Be Careful!")
-                    elif roberta_mean > -0.5 and roberta_mean < 0:
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The near future of the company does not look too bright. Be Cautious")
-                    elif roberta_mean > 0 and roberta_mean < 0.5:
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The company will have a steady growth in the near future!")
-                    else: 
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The company's value is going to SKYROCKET very soon!!!")
+                    # #results
+                    # roberta_mean_str = str(roberta_mean)
+                    # roberta_cut_str = roberta_mean_str[:6]
+                    # st.warning("This is not a Financial Advisor")
+                    # if roberta_mean <= -0.5:
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("It's very likely that the company value will soon been DECREASING at a rapid rate!!! Be Careful!")
+                    # elif roberta_mean > -0.5 and roberta_mean < 0:
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("The near future of the company does not look too bright. Be Cautious")
+                    # elif roberta_mean > 0 and roberta_mean < 0.5:
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("The company will have a steady growth in the near future!")
+                    # else: 
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("The company's value is going to SKYROCKET very soon!!!")
 
             if analyser == 'VANDER: Accurate & Fast':
                 vender_analyser()
