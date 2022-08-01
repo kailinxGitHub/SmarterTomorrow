@@ -200,9 +200,7 @@ def twitter():
 
                     # RoBERTa compound mean
                     roberta_mean = dfRO["roberta_compound"].mean()
-                    roberta_mean_slider = st.slider(
-                        '-1.00: Negative, 0.00: Neutral, 1.00: Positive',
-                        -1.00, 1.00, value=roberta_mean)
+                    roberta_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=roberta_mean)
                     st.write('Total Sentiment: ', roberta_mean_slider)
                     
                     #results
