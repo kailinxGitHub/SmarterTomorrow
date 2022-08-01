@@ -14,6 +14,7 @@ import tqdm
 from tqdm.notebook import tqdm
 import transformers
 from transformers import AutoModelForSequenceClassification
+from transformers import AutoTokenizer
 import scipy
 from scipy.special import softmax
 
@@ -106,7 +107,6 @@ def twitter():
                 st.subheader("VANDER: Socia Media Dedicated")
                 if st.checkbox("Start Analysing!"): 
                     analyzer = SentimentIntensityAnalyzer()
-
                     # First back up the values in 'dfV'
                     dfV = pd.DataFrame(df, columns = ['username', 'tweet_id', 'tweet_text', 'vader_neg', 'vader_neu', 'vader_pos', 'vader_compound'])
                     dfV['vader_neg'] = df['tweet_text'].apply(lambda x:analyzer.polarity_scores(x)['neg'])
@@ -128,9 +128,7 @@ def twitter():
 
                     # mean
                     vader_mean = dfVO["vader_compound"].mean()
-                    vader_mean_slider = st.slider(
-                        '-1.00: Negative, 0.00: Neutral, 1.00: Positive',
-                        -1.00, 1.00, vader_mean)
+                    vader_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=vader_mean)
                     st.write('Total Sentiment: ', vader_mean_slider)
                     
                     #results
@@ -155,7 +153,6 @@ def twitter():
                 st.subheader("RoBERTa: Pretrained NLP")
                 if st.checkbox("Start Analysing!"): 
                     MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
-                    from transformers import AutoTokenizer
                     tokenizer = AutoTokenizer.from_pretrained(MODEL)
                     # from tensorflow import BertTokenizer
                     # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", do_lower_case = True)
@@ -198,29 +195,27 @@ def twitter():
                     dfRO = pd.DataFrame(dfR, columns = ['roberta_compound', 'roberta_neg', 'roberta_neu', 'roberta_pos', 'tweet_text'])
                     st.write(dfRO.head())
 
-                    # RoBERTa compound mean
-                    roberta_mean = dfRO["roberta_compound"].mean()
-                    roberta_mean_slider = st.slider(
-                        '-1.00: Negative, 0.00: Neutral, 1.00: Positive',
-                        -1.00, 1.00, roberta_mean)
-                    st.write('Total Sentiment: ', roberta_mean_slider)
+                    # # RoBERTa compound mean
+                    # roberta_mean = dfRO["roberta_compound"].mean()
+                    # roberta_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=roberta_mean)
+                    # st.write('Total Sentiment: ', roberta_mean_slider)
                     
-                    #results
-                    roberta_mean_str = str(roberta_mean)
-                    roberta_cut_str = roberta_mean_str[:6]
-                    st.warning("This is not a Financial Advisor")
-                    if roberta_mean <= -0.5:
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("It's very likely that the company value will soon been DECREASING at a rapid rate!!! Be Careful!")
-                    elif roberta_mean > -0.5 and roberta_mean < 0:
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The near future of the company does not look too bright. Be Cautious")
-                    elif roberta_mean > 0 and roberta_mean < 0.5:
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The company will have a steady growth in the near future!")
-                    else: 
-                        st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The company's value is going to SKYROCKET very soon!!!")
+                    # #results
+                    # roberta_mean_str = str(roberta_mean)
+                    # roberta_cut_str = roberta_mean_str[:6]
+                    # st.warning("This is not a Financial Advisor")
+                    # if roberta_mean <= -0.5:
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("It's very likely that the company value will soon been DECREASING at a rapid rate!!! Be Careful!")
+                    # elif roberta_mean > -0.5 and roberta_mean < 0:
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("The near future of the company does not look too bright. Be Cautious")
+                    # elif roberta_mean > 0 and roberta_mean < 0.5:
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("The company will have a steady growth in the near future!")
+                    # else: 
+                    #     st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
+                    #     st.subheader("The company's value is going to SKYROCKET very soon!!!")
 
             if analyser == 'VANDER: Accurate & Fast':
                 vender_analyser()
