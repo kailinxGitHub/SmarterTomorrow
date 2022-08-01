@@ -106,8 +106,8 @@ def twitter():
             def vender_analyser():
                 st.subheader("VANDER: Socia Media Dedicated")
                 if st.checkbox("Start Analysing!"): 
+                    nltk.download('vader_lexicon')
                     analyzer = SentimentIntensityAnalyzer()
-
                     # First back up the values in 'dfV'
                     dfV = pd.DataFrame(df, columns = ['username', 'tweet_id', 'tweet_text', 'vader_neg', 'vader_neu', 'vader_pos', 'vader_compound'])
                     dfV['vader_neg'] = df['tweet_text'].apply(lambda x:analyzer.polarity_scores(x)['neg'])
