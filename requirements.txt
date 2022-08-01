@@ -11,5 +11,4 @@ tensorflow
 torchvision==0.13.0
 torch
 pytorch
-torch==1.10.2
 wheel==0.37.1
