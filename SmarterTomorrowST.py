@@ -14,6 +14,7 @@ import tqdm
 from tqdm.notebook import tqdm
 import transformers
 from transformers import AutoModelForSequenceClassification
+from transformers import AutoTokenizer
 import scipy
 from scipy.special import softmax
 
@@ -155,7 +156,6 @@ def twitter():
                 st.subheader("RoBERTa: Pretrained NLP")
                 if st.checkbox("Start Analysing!"): 
                     MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
-                    from transformers import AutoTokenizer
                     tokenizer = AutoTokenizer.from_pretrained(MODEL)
                     # from tensorflow import BertTokenizer
                     # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", do_lower_case = True)
