@@ -29,8 +29,8 @@ search_form = st.form("search_form")
 with search_form: 
     query = st.text_input("Company Name (aka Twitter Tag)", placeholder='e.g. Google, Tesla')
     # duration = st.selectbox("Choose a duration", ('Recent One Quater', 'Recent Two Quaters', 'Recent Year', 'Recent Two Year'))
-    analyser = st.selectbox("Choose an Analyser", ('VANDER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
     selected_apis = st.multiselect('Select APIs', ['Twitter', 'Another Platform'], default='Twitter')
+    analyser = st.selectbox("Choose an Analyser", ('VANDER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
     checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Financial Advisor!")
     searched = st.form_submit_button("Search")
     if searched:
@@ -123,7 +123,7 @@ def twitter():
 
                     # VADER only
                     st.subheader('VANDER Table')
-                    dfVO = pd.DataFrame(dfV, columns=['vader_neg', 'vader_neu', 'vader_pos', 'vader_compound', 'tweet_text'])
+                    dfVO = pd.DataFrame(dfV, columns=['vader_compound', 'vader_neg', 'vader_neu', 'vader_pos', 'tweet_text'])
                     st.write(dfVO)
 
                     # mean
@@ -155,17 +155,18 @@ def twitter():
                 st.subheader("RoBERTa: Pretrained NLP")
                 if st.checkbox("Start Analysing!"): 
                     MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
-                    # from transformers import AutoTokenizer
-                    # tokenizer = AutoTokenizer.from_pretrained(MODEL)
-                    from tensorflow import BertTokenizer
-                    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", do_lower_case = True)
+                    from transformers import AutoTokenizer
+                    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+                    # from tensorflow import BertTokenizer
+                    # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", do_lower_case = True)
                     model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
                     # Process
-                    dfR = pd.DataFrame(df, columns = ['username', 'tweet_id', 'tweet_text', 'vader_neg', 'vader_neu', 'vader_pos', 'vader_compound', 'roberta_neg', 'roberta_neu', 'roberta_pos'])
+                    dfR = pd.DataFrame(df, columns = ['username', 'tweet_id', 'tweet_text', 'roberta_neg', 'roberta_neu', 'roberta_pos', 'roberta_compound'])
                     roberta_negL = []
                     roberta_neuL = []
                     roberta_posL = []
+                    roberta_compoundL = []
                     for i in df["tweet_text"]:
                         # tokenize
                         encoded_text = tokenizer(i, return_tensors='pt')
@@ -178,23 +179,27 @@ def twitter():
                         roberta_neuL.append(roberta_neu)
                         roberta_pos = scores[2]
                         roberta_posL.append(roberta_pos)
+                        roberta_compound_sum = roberta_neu + roberta_pos - roberta_neg
+                        roberta_compound = float(roberta_compound_sum)
+                        roberta_compoundL.append(roberta_compound)
                     dfR = dfR.assign(roberta_neg=roberta_negL)
                     dfR = dfR.assign(roberta_neu=roberta_neuL)
                     dfR = dfR.assign(roberta_pos=roberta_posL)
+                    dfR = dfR.assign(roberta_compound=roberta_compoundL)
 
                     # First back up the values in 'dfR'
-                    if st.checkbox('Show full data table with VANDER values'):
+                    if st.checkbox('Show full data table with RoBERTa values'):
                         st.subheader('Full Table With RoBERTa')
                         st.write(dfR.head())
                         if st.button('Download Full Data CSV'):
                             dfR.to_csv('twitterRoBERTa.csv', sep='\t', encoding='utf-8')
 
                     #RoBERTa only
-                    dfRO = pd.DataFrame(dfR, columns = ['roberta_neg', 'roberta_neu', 'roberta_pos', 'tweet_text'])
+                    dfRO = pd.DataFrame(dfR, columns = ['roberta_compound', 'roberta_neg', 'roberta_neu', 'roberta_pos', 'tweet_text'])
                     st.write(dfRO.head())
 
-                    # mean
-                    roberta_mean = dfRO["vader_compound"].mean()
+                    # RoBERTa compound mean
+                    roberta_mean = dfRO["roberta_compound"].mean()
                     roberta_mean_slider = st.slider(
                         '-1.00: Negative, 0.00: Neutral, 1.00: Positive',
                         -1.00, 1.00, roberta_mean)
