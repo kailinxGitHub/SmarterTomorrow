@@ -125,7 +125,7 @@ def twitter():
                         if st.button('Download Full Data CSV'):
                             dfV.to_csv('twitterVander.csv', sep='\t', encoding='utf-8')
                     else:
-                        st.write(dfVO)
+                        st.write(dfVO.head())
 
                     # mean
                     vader_mean = dfVO["vader_compound"].mean()
@@ -148,7 +148,7 @@ def twitter():
                         st.subheader("The company will have a steady growth in the near future!")
                     else: 
                         st.subheader("Your Final Sentiment Is: " + vader_cut_str)
-                        st.subheader("The company's value is going to SKYROCKET very soon!!!")
+                        st.subheader("The company's value is going to SKYROCKET very soon!")
             
                 #RoBERTa
             def roberta_analyser():
@@ -220,7 +220,7 @@ def twitter():
                         st.subheader("The company will have a steady growth in the near future!")
                     else: 
                         st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
-                        st.subheader("The company's value is going to SKYROCKET very soon!!!")
+                        st.subheader("The company's value is going to SKYROCKET very soon!")
 
             if analyser == 'VANDER: Accurate & Fast':
                 vender_analyser()
