@@ -19,6 +19,13 @@ from transformers import AutoTokenizer
 import scipy
 from scipy.special import softmax
 
+# Miscellaneous
+    # CSV converter
+@st.cache
+def convert_df(file):
+    return file.to_csv().encode('utf-8')
+    
+
 header = st.container()
 with header: 
     st.title('SmarterTomorrow')
@@ -32,7 +39,7 @@ with search_form:
     query = st.text_input("Company Name (aka Twitter Tag)", placeholder='e.g. Google, Tesla')
     # duration = st.selectbox("Choose a duration", ('Recent One Quater', 'Recent Two Quaters', 'Recent Year', 'Recent Two Year'))
     selected_apis = st.multiselect('Select APIs', ['Twitter', 'Another Platform'], default='Twitter')
-    analyser = st.selectbox("Choose an Analyser", ('VANDER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
+    analyser = st.selectbox("Choose an Analyser", ('VADER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
     checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Financial Advisor!")
     searched = st.form_submit_button("Search")
     if searched:
@@ -104,8 +111,8 @@ def twitter():
             
             ## Analysers
                 # Vader
-            def vender_analyser():
-                st.subheader("VANDER: Socia Media Dedicated")
+            def vader_analyser():
+                st.subheader("VADER: Socia Media Dedicated")
                 if st.checkbox("Start Analysing!"): 
                     analyzer = SentimentIntensityAnalyzer()
                     # First back up the values in 'dfV'
@@ -116,14 +123,20 @@ def twitter():
                     dfV['vader_compound'] = df['tweet_text'].apply(lambda x:analyzer.polarity_scores(x)['compound'])
 
                     # VADER only
-                    st.subheader('VANDER Table')
+                    st.subheader('VADER Table')
                     dfVO = pd.DataFrame(dfV, columns=['vader_compound', 'vader_neg', 'vader_neu', 'vader_pos', 'tweet_text'])
 
-                    if st.checkbox('Show full data table with VANDER values'):
-                        st.subheader('Full Table With VANDER')
+                    if st.checkbox('Show full data table with VADER values'):
+                        st.subheader('Full Table With VADER')
                         st.write(dfV.head())
-                        if st.button('Download Full Data CSV'):
-                            dfV.to_csv('twitterVander.csv', sep='\t', encoding='utf-8')
+                        vader_csv = convert_df(dfV)
+                        st.download_button(
+                            "Press to Download",
+                            vader_csv,
+                            "vader_full_table.csv",
+                            "text/csv",
+                            key='download-csv'
+                        )
                     else:
                         st.write(dfVO.head())
 
@@ -194,8 +207,14 @@ def twitter():
                     if st.checkbox('Show full data table with RoBERTa values'):
                         st.subheader('Full Table With RoBERTa')
                         st.write(dfR.head())
-                        if st.button('Download Full Data CSV'):
-                            dfR.to_csv('twitterRoBERTa.csv', sep='\t', encoding='utf-8')
+                        vader_csv = convert_df(dfR)
+                        st.download_button(
+                            "Press to Download",
+                            vader_csv,
+                            "roberta_full_table.csv",
+                            "text/csv",
+                            key='download-csv'
+                        )
                     else:
                         st.write(dfRO.head())
 
@@ -222,8 +241,8 @@ def twitter():
                         st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
                         st.subheader("The company's value is going to SKYROCKET very soon!")
 
-            if analyser == 'VANDER: Accurate & Fast':
-                vender_analyser()
+            if analyser == 'VADER: Accurate & Fast':
+                vader_analyser()
             elif analyser == 'RoBERTa: Premium Accuracy & Very Slow':
                 roberta_analyser()
 
