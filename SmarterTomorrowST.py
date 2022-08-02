@@ -115,17 +115,17 @@ def twitter():
                     dfV['vader_pos'] = df['tweet_text'].apply(lambda x:analyzer.polarity_scores(x)['pos'])
                     dfV['vader_compound'] = df['tweet_text'].apply(lambda x:analyzer.polarity_scores(x)['compound'])
 
+                    # VADER only
+                    st.subheader('VANDER Table')
+                    dfVO = pd.DataFrame(dfV, columns=['vader_compound', 'vader_neg', 'vader_neu', 'vader_pos', 'tweet_text'])
+
                     if st.checkbox('Show full data table with VANDER values'):
                         st.subheader('Full Table With VANDER')
                         st.write(dfV.head())
                         if st.button('Download Full Data CSV'):
                             dfV.to_csv('twitterVander.csv', sep='\t', encoding='utf-8')
-
-
-                    # VADER only
-                    st.subheader('VANDER Table')
-                    dfVO = pd.DataFrame(dfV, columns=['vader_compound', 'vader_neg', 'vader_neu', 'vader_pos', 'tweet_text'])
-                    st.write(dfVO)
+                    else:
+                        st.write(dfVO)
 
                     # mean
                     vader_mean = dfVO["vader_compound"].mean()
@@ -186,16 +186,18 @@ def twitter():
                     dfR = dfR.assign(roberta_pos=roberta_posL)
                     dfR = dfR.assign(roberta_compound=roberta_compoundL)
 
+                    #RoBERTa only
+                    st.subheader('RoBERTa Table')
+                    dfRO = pd.DataFrame(dfR, columns = ['roberta_compound', 'roberta_neg', 'roberta_neu', 'roberta_pos', 'tweet_text'])
+                    
                     # First back up the values in 'dfR'
                     if st.checkbox('Show full data table with RoBERTa values'):
                         st.subheader('Full Table With RoBERTa')
                         st.write(dfR.head())
                         if st.button('Download Full Data CSV'):
                             dfR.to_csv('twitterRoBERTa.csv', sep='\t', encoding='utf-8')
-
-                    #RoBERTa only
-                    dfRO = pd.DataFrame(dfR, columns = ['roberta_compound', 'roberta_neg', 'roberta_neu', 'roberta_pos', 'tweet_text'])
-                    st.write(dfRO.head())
+                    else:
+                        st.write(dfRO.head())
 
                     # RoBERTa compound mean
                     roberta_mean = dfRO["roberta_compound"].mean()
