@@ -30,7 +30,7 @@ header = st.container()
 with header: 
     st.title('SmarterTomorrow')
     st.caption('**Description**: ')
-    st.caption("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.")
+    st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a clicik of a button!")
 
 #Search
 st.header("Search")
@@ -104,6 +104,8 @@ def twitter():
             plt.ylabel('Frequency')
             st.pyplot(fig)
 
+            # wordcloud
+
         # Sentiment
         sentiment = st.container()
         with sentiment: 
@@ -145,6 +147,23 @@ def twitter():
                     vader_mean_list = vader_mean.tolist()
                     vader_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=vader_mean_list)
                     st.write('Total Sentiment: ', vader_mean_slider)
+
+                    # pie chart
+                    vader_pie_labels = 'Negative', 'Neutral', 'Positive'
+                    vader_neg_lines = (dfVO["vader_neg"] != 0).sum()
+                    vader_neu_lines = (dfVO["vader_neu"] != 0).sum()
+                    vader_pos_lines = (dfVO["vader_pos"] != 0).sum()
+                    vader_lines_sum = vader_neg_lines+vader_neu_lines+vader_pos_lines
+                    vader_neg_perc = vader_neg_lines/vader_lines_sum
+                    vader_neu_perc = vader_neu_lines/vader_lines_sum
+                    vader_pos_perc = vader_pos_lines/vader_lines_sum
+                    sizes = [vader_neg_perc, vader_neu_perc, vader_pos_perc]
+                    explode = (0, 0, 0)
+                    vader_fig, vader_ax = plt.subplots()
+                    vader_ax.pie(sizes, explode=explode, labels=vader_pie_labels, autopct='%1.1f%%',
+                            shadow=True, startangle=90)
+                    vader_ax.axis('equal')
+                    st.pyplot(vader_fig)
                     
                     #results
                     vader_mean_str = str(vader_mean)
@@ -223,6 +242,22 @@ def twitter():
                     roberta_mean_list = roberta_mean.tolist()
                     roberta_mean_slider = st.slider('-1.00: Negative, 0.00: Neutral, 1.00: Positive', min_value=-1.00, max_value=1.00, value=roberta_mean_list)
                     st.write('Total Sentiment: ', roberta_mean_slider)
+
+                    # pie chart
+                    roberta_pie_labels = 'Negative', 'Neutral', 'Positive'
+                    roberta_neg_lines = dfRO["roberta_neg"].sum()
+                    roberta_neu_lines = dfRO["roberta_neu"].sum()
+                    roberta_pos_lines = dfRO["roberta_pos"].sum()
+                    roberta_lines_sum = roberta_neg_lines+roberta_neu_lines+roberta_pos_lines
+                    roberta_neg_perc = roberta_neg_lines/roberta_lines_sum
+                    roberta_neu_perc = roberta_neu_lines/roberta_lines_sum
+                    roberta_pos_perc = roberta_pos_lines/roberta_lines_sum
+                    sizes = [roberta_neg_perc, roberta_neu_perc, roberta_pos_perc]
+                    roberta_fig, roberta_ax = plt.subplots()
+                    roberta_ax.pie(sizes, labels=roberta_pie_labels, autopct='%1.1f%%',
+                            shadow=True, startangle=90)
+                    roberta_ax.axis('equal')
+                    st.pyplot(roberta_fig)
                     
                     #results
                     roberta_mean_str = str(roberta_mean)
