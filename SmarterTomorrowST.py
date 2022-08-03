@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import wordcloud
+from wordcloud import WordCloud
+from wordcloud import ImageColorGenerator
+from wordcloud import STOPWORDS
 import nltk
 nltk.download('vader_lexicon')
 from nltk.tokenize import word_tokenize
@@ -86,23 +90,31 @@ def twitter():
 
         dataset = st.container()
         with dataset: 
-            for i in df["tweet_text"]:
-                sr = pd.Series(i)
-                sr.to_string()
-                tokenizer = RegexpTokenizer(r'\w+')
-                tokens = tokenizer.tokenize(i)
-            fdist = FreqDist()
-            for word in tokens:
-                fdist[word.lower()] += 1
-            st.subheader("The 10 most common words")
-            most_common10 = fdist.most_common(10)
-            most_common10DF = pd.DataFrame(most_common10, columns = ['Words', 'Frequency'])
-            all_fdist = pd.Series(dict(most_common10))
-            fig, ax = plt.subplots(figsize=(10,10))
-            all_plot = sns.barplot(x=all_fdist.index, y=all_fdist.values, ax=ax)
-            plt.xlabel('Words')
-            plt.ylabel('Frequency')
-            st.pyplot(fig)
+            # for i in df["tweet_text"]:
+            #     sr = pd.Series(i)
+            #     sr.to_string()
+            #     tokenizer = RegexpTokenizer(r'\w+')
+            #     tokens = tokenizer.tokenize(i)
+            # fdist = FreqDist()
+            # for word in tokens:
+            #     fdist[word.lower()] += 1
+            # st.subheader("The 10 most common words")
+            # most_common10 = fdist.most_common(10)
+            # most_common10DF = pd.DataFrame(most_common10, columns = ['Words', 'Frequency'])
+            # all_fdist = pd.Series(dict(most_common10))
+            # fig, ax = plt.subplots(figsize=(10,10))
+            # all_plot = sns.barplot(x=all_fdist.index, y=all_fdist.values, ax=ax)
+            # plt.xlabel('Words')
+            # plt.ylabel('Frequency')
+            # st.pyplot(fig)
+            text = " ".join(i for i in df["tweet_text"])
+            stopwords = set(STOPWORDS)
+            wordcloud = WordCloud(stopwords=stopwords, background_color="white").generate(text)
+            plt.imshow(wordcloud, interpolation='bilinear')
+            plt.axis("off")
+            plt.show()
+            st.pyplot()
+            st.set_option('deprecation.showPyplotGlobalUse', False)
 
             # wordcloud
 
