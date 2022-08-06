@@ -122,6 +122,11 @@ def twitter():
     searched_status = True
 
 
+    # Temp
+    full_pd = pd.read_csv('output.csv')
+    df = pd.DataFrame(full_pd)
+    # Temp
+
     # Analysis
     start_analyser = st.checkbox('Start The Data Section!')
     if searched_status == True and start_analyser == True:
