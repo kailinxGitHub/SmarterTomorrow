@@ -13,3 +13,4 @@ torchvision
 torchaudio
 wheel==0.37.1
 wordcloud==1.8.2.2
+geocoder==1.38.1
