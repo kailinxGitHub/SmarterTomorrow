@@ -76,8 +76,8 @@ def twitter():
     twitter_section = st.header("Twitter")
     with twitter_section:
 
-        import tweepy
-        import config
+        # import tweepy
+        # import config
 
         # client = tweepy.Client(bearer_token= "AAAAAAAAAAAAAAAAAAAAAGG%2BfAEAAAAA8LxwtsjaNZqeMZ3D1oIljvRh7gY%3DK71AEHJOlGtRH5jUv5xYG6cbrhBs8jl8Ft9YiAdl4GBKuBcLwF")
 
