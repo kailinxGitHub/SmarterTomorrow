@@ -29,49 +29,98 @@ from scipy.special import softmax
 def convert_df(file):
     return file.to_csv().encode('utf-8')
     
-
+# Header
 header = st.container()
 with header: 
     st.title('SmarterTomorrow')
     st.caption('**Description**: ')
     st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a clicik of a button!")
 
-#Search
+#Access Limit (once a day from one IP)
+
+
+
+# Search
 st.header("Search")
 search_form = st.form("search_form")
 with search_form: 
-    query = st.text_input("Company Name (aka Twitter Tag)", placeholder='e.g. Google, Tesla')
+    comp_name = st.text_input("Company Name (aka Twitter Tag)", placeholder='e.g. Google, Tesla')
     # duration = st.selectbox("Choose a duration", ('Recent One Quater', 'Recent Two Quaters', 'Recent Year', 'Recent Two Year'))
     selected_apis = st.multiselect('Select APIs', ['Twitter', 'Another Platform'], default='Twitter')
     analyser = st.selectbox("Choose an Analyser", ('VADER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
     checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Financial Advisor!")
     searched = st.form_submit_button("Search")
     if searched:
-        if len(query) != 0 and checkbox_val == True:
-            # st.write("Company Name: ", query)
+        if len(comp_name) != 0 and checkbox_val == True:
+            # st.write("Company Name: ", comp_name)
             # st.write("Duration: ", duration,)
             # st.write("Analyser: ", analyser)
             # st.write("Checkbox: ", checkbox_val)
             st.write("Successful!")
-        elif len(query) == 0 and checkbox_val == True:
+        elif len(comp_name) == 0 and checkbox_val == True:
             st.warning("**Please Enter a Company Name**")
-        elif len(query) != 0 and checkbox_val == False:
+        elif len(comp_name) != 0 and checkbox_val == False:
             st.warning("**Please agree to the Terms & Conditions!**")
-        elif len(query) == 0 and checkbox_val == False:
+        elif len(comp_name) == 0 and checkbox_val == False:
             st.warning("**No Company Input, and agree to the Terms & Conditions! Try again!**")
 
 ### Another Platform
+import geocoder
+import streamlit as st
+location = geocoder.ip("me")
+ip_address = location.ip
+st.write(ip_address)
 
 ### Twitter
 def twitter():
     #Twitter API input
     twitter_section = st.header("Twitter")
     with twitter_section:
-        df = pd.read_csv('output.csv')
-            # cleanup
-        df = df.drop(['Unnamed: 0'], axis=1)
+
+        import tweepy
+        import config
+
+        # client = tweepy.Client(bearer_token= "AAAAAAAAAAAAAAAAAAAAAGG%2BfAEAAAAA8LxwtsjaNZqeMZ3D1oIljvRh7gY%3DK71AEHJOlGtRH5jUv5xYG6cbrhBs8jl8Ft9YiAdl4GBKuBcLwF")
+
+        # name of the account/keyword
+        # query = comp_name
+
+        # response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
+
+        # users = {u['id']: u for u in response.includes['users']}
+
+        # full_table = []
+
+        # for tweet in response.data:
+
+        #     language = tweet.lang
+        #     if language == "en":
+        #         element_table = []
+
+        #     # user
+        #         user = users[tweet.author_id]
+        #         username = user.username
+        #         element_table.append(username)
+
+        #     # tweet
+        #         tweet_id = tweet.id
+        #         element_table.append(tweet_id)
+
+        #         tweet_text = tweet.text
+        #         element_table.append(tweet_text)
+
+        #         full_table.append(element_table)
+        #     else:
+        #         continue
+
+        # full_pd = np.array(full_table)
+        # df = pd.DataFrame(full_pd)
+        # st.write(df)
+        #     # cleanup
+        # # df = df.drop(['Unnamed: 0'], axis=1)
 
     searched_status = True
+
 
     # Analysis
     start_analyser = st.checkbox('Start The Data Section!')
@@ -90,23 +139,6 @@ def twitter():
 
         dataset = st.container()
         with dataset: 
-            # for i in df["tweet_text"]:
-            #     sr = pd.Series(i)
-            #     sr.to_string()
-            #     tokenizer = RegexpTokenizer(r'\w+')
-            #     tokens = tokenizer.tokenize(i)
-            # fdist = FreqDist()
-            # for word in tokens:
-            #     fdist[word.lower()] += 1
-            # st.subheader("The 10 most common words")
-            # most_common10 = fdist.most_common(10)
-            # most_common10DF = pd.DataFrame(most_common10, columns = ['Words', 'Frequency'])
-            # all_fdist = pd.Series(dict(most_common10))
-            # fig, ax = plt.subplots(figsize=(10,10))
-            # all_plot = sns.barplot(x=all_fdist.index, y=all_fdist.values, ax=ax)
-            # plt.xlabel('Words')
-            # plt.ylabel('Frequency')
-            # st.pyplot(fig)
             text = " ".join(i for i in df["tweet_text"])
             stopwords = set(STOPWORDS)
             wordcloud = WordCloud(stopwords=stopwords, background_color="white").generate(text)
