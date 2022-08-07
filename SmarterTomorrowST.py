@@ -40,6 +40,8 @@ st.markdown(""" <style>
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 </style> """, unsafe_allow_html=True)
+    # Disable legacy warnings
+st.set_option('deprecation.showPyplotGlobalUse', False)
     # CSV converter
 @st.cache
 def convert_df(file):
