@@ -17,3 +17,4 @@ wordcloud==1.8.2.2
 geocoder==1.38.1
 tweepy==4.10.0
 config==0.5.1
+yfinance==0.1.74
