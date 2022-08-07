@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import yfinance as yf
+import tweepy
+import config
 import wordcloud
 from wordcloud import WordCloud
 from wordcloud import ImageColorGenerator
@@ -21,49 +24,96 @@ from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
 import scipy
 from scipy.special import softmax
+from PIL import Image
 
 # Miscellaneous
+    # Title & Favicon
+image = Image.open('favicon.ico')
+st.set_page_config(
+	layout="wide",  # Can be "centered" or "wide". In the future also "dashboard", etc.
+	initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
+	page_title="SmarterTomorrow - KAILINX",  # String or None. Strings get appended with "• Streamlit". 
+	page_icon=image,  # String, anything supported by st.image, or None.
+)
+    # Clear Menu Button
+st.markdown(""" <style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style> """, unsafe_allow_html=True)
     # CSV converter
 @st.cache
 def convert_df(file):
     return file.to_csv().encode('utf-8')
-    
+    # Long Name Display
+ticker_longName = False
+
+# Search
+st.sidebar.header("Search")
+sidebar = st.sidebar
+with sidebar: 
+    search_form = st.form("search")
+    with search_form:
+        symbol = st.text_input("Company Ticker Symbol (aka Stock Name)", placeholder='e.g. AMZN, AAPL')
+        st.info("Find your Company's Ticker Symbol [Here](https://finance.yahoo.com/lookup/)")
+        # duration = st.selectbox("Choose a duration", ('Recent One Quater', 'Recent Two Quaters', 'Recent Year', 'Recent Two Year'))
+        selected_apis = st.multiselect('Select APIs', ['Twitter', 'Another Platform'], default='Twitter')
+        analyser = st.selectbox("Choose an Analyser", ('VADER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
+        checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Financial Advisor!")
+        searched = st.form_submit_button("Search")
+        if searched:
+            if 1 <= len(symbol) <= 5 and checkbox_val == True:
+                # st.write("Company Ticker Symbol: ", symbol)
+                # st.write("Duration: ", duration,)
+                # st.write("Analyser: ", analyser)
+                # st.write("Checkbox: ", checkbox_val)
+                st.success("Successful!")
+                ticker_longName = True
+            elif (len(symbol) == 0 or len(symbol) > 5) and checkbox_val == True:
+                st.error("**Please Enter a VALID Ticker Symbol: Up to 5 characters**")
+            elif 1 <= len(symbol) <= 5 and checkbox_val == False:
+                st.error("**Please agree to the Terms & Conditions!**")
+            elif (len(symbol) == 0 or len(symbol) > 5) and checkbox_val == False:
+                st.error("**No Company Input, and agree to the Terms & Conditions! Try again!**")
+
 # Header
 header = st.container()
 with header: 
     st.title('SmarterTomorrow')
     st.caption('**Description**: ')
-    st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a clicik of a button!")
+    st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a click of a button!")
+    # Convert Ticker Symbol to Name
+    if ticker_longName == True:
+        ticker_symbol = yf.Ticker(symbol)
+        company_name = ticker_symbol.info['longName']
+        st.header(company_name)
 
-#Access Limit (once a day from one IP)
+# Financial Data
+finance = st.container()
+with finance:
+    if ticker_longName == True:
+        finance_data = yf.download(
+                tickers = symbol,
+                period = "ytd",
+                interval = "1d",
+                group_by = 'ticker',
+                auto_adjust = True,
+                prepost = True,
+                threads = True,
+                proxy = None
+            )
 
+            # Plot Closing Price of Query Symbol
+        yf_data = pd.DataFrame(finance_data.Close)
+        yf_data['Date'] = yf_data.index
+        plt.fill_between(yf_data.Date, yf_data.Close, color='skyblue', alpha=0.3)
+        plt.plot(yf_data.Date, yf_data.Close, color='skyblue', alpha=0.8)
+        plt.xticks(rotation=90)
+        plt.title(symbol, fontweight='bold')
+        plt.xlabel('Date', fontweight='bold')
+        plt.ylabel('Closing Price', fontweight='bold')
+        st.pyplot()
 
-
-# Search
-st.header("Search")
-search_form = st.form("search_form")
-with search_form: 
-    comp_name = st.text_input("Company Name (aka Twitter Tag)", placeholder='e.g. Google, Tesla')
-    # duration = st.selectbox("Choose a duration", ('Recent One Quater', 'Recent Two Quaters', 'Recent Year', 'Recent Two Year'))
-    selected_apis = st.multiselect('Select APIs', ['Twitter', 'Another Platform'], default='Twitter')
-    analyser = st.selectbox("Choose an Analyser", ('VADER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
-    checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Financial Advisor!")
-    searched = st.form_submit_button("Search")
-    if searched:
-        if len(comp_name) != 0 and checkbox_val == True:
-            # st.write("Company Name: ", comp_name)
-            # st.write("Duration: ", duration,)
-            # st.write("Analyser: ", analyser)
-            # st.write("Checkbox: ", checkbox_val)
-            st.write("Successful!")
-        elif len(comp_name) == 0 and checkbox_val == True:
-            st.warning("**Please Enter a Company Name**")
-        elif len(comp_name) != 0 and checkbox_val == False:
-            st.warning("**Please agree to the Terms & Conditions!**")
-        elif len(comp_name) == 0 and checkbox_val == False:
-            st.warning("**No Company Input, and agree to the Terms & Conditions! Try again!**")
-
-### Another Platform
+# Attempts Check
 import geocoder
 import streamlit as st
 location = geocoder.ip("me")
@@ -75,50 +125,49 @@ def twitter():
     #Twitter API input
     twitter_section = st.header("Twitter")
     with twitter_section:
+        @st.cache
+        def get_twitter_data():
+            client = tweepy.Client(bearer_token= "AAAAAAAAAAAAAAAAAAAAAGG%2BfAEAAAAA8LxwtsjaNZqeMZ3D1oIljvRh7gY%3DK71AEHJOlGtRH5jUv5xYG6cbrhBs8jl8Ft9YiAdl4GBKuBcLwF")
 
-        import tweepy
-        import config
+            # name of the account/keyword
+            # query = company_name
 
-        # client = tweepy.Client(bearer_token= "AAAAAAAAAAAAAAAAAAAAAGG%2BfAEAAAAA8LxwtsjaNZqeMZ3D1oIljvRh7gY%3DK71AEHJOlGtRH5jUv5xYG6cbrhBs8jl8Ft9YiAdl4GBKuBcLwF")
+            # response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
 
-        # name of the account/keyword
-        # query = comp_name
+            # users = {u['id']: u for u in response.includes['users']}
 
-        # response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
+            # full_table = []
 
-        # users = {u['id']: u for u in response.includes['users']}
+            # for tweet in response.data:
 
-        # full_table = []
+            #     language = tweet.lang
+            #     if language == "en":
+            #         element_table = []
 
-        # for tweet in response.data:
+            #     # user
+            #         user = users[tweet.author_id]
+            #         username = user.username
+            #         element_table.append(username)
 
-        #     language = tweet.lang
-        #     if language == "en":
-        #         element_table = []
+            #     # tweet
+            #         tweet_id = tweet.id
+            #         element_table.append(tweet_id)
 
-        #     # user
-        #         user = users[tweet.author_id]
-        #         username = user.username
-        #         element_table.append(username)
+            #         tweet_text = tweet.text
+            #         element_table.append(tweet_text)
 
-        #     # tweet
-        #         tweet_id = tweet.id
-        #         element_table.append(tweet_id)
+            #         full_table.append(element_table)
+            #     else:
+            #         continue
 
-        #         tweet_text = tweet.text
-        #         element_table.append(tweet_text)
-
-        #         full_table.append(element_table)
-        #     else:
-        #         continue
-
-        # full_pd = np.array(full_table)
-        # df = pd.DataFrame(full_pd)
-        # st.write(df)
-        #     # cleanup
-        # # df = df.drop(['Unnamed: 0'], axis=1)
-
-    searched_status = True
+            # full_pd = np.array(full_table)
+            # df = pd.DataFrame(full_pd)
+            # st.write(df)
+            #     # cleanup
+            # # df = df.drop(['Unnamed: 0'], axis=1)
+    
+        get_twitter_data()
+        searched_status = True
 
 
     # Temp
@@ -336,10 +385,12 @@ def twitter():
     elif searched_status == False and analyser == False:
         st.write("")
 
+### Another Platform
+
 
 if ('Twitter' in selected_apis) == True:
     twitter()
 elif ('Another Platform' in selected_apis) == True:
     st.write("Another Platform")
 else:
-    st.write("No APIs selected")
+    st.warning("No APIs selected")
