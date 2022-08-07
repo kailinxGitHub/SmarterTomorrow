@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image
 import yfinance as yf
 import tweepy
 import config
@@ -24,7 +25,6 @@ from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
 import scipy
 from scipy.special import softmax
-from PIL import Image
 
 # Miscellaneous
     # Title & Favicon
