@@ -113,7 +113,6 @@ with finance:
         plt.title(symbol, fontweight='bold')
         plt.xlabel('Date', fontweight='bold')
         plt.ylabel('Closing Price', fontweight='bold')
-        st.set_option('deprecation.showPyplotGlobalUse', False)
         st.pyplot()
 
 # Attempts Check
