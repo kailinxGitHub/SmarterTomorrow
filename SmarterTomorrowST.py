@@ -127,55 +127,11 @@ def twitter():
     #Twitter API input
     twitter_section = st.header("Twitter")
     with twitter_section:
-        @st.cache
-        def get_twitter_data():
-            client = tweepy.Client(bearer_token= "AAAAAAAAAAAAAAAAAAAAAGG%2BfAEAAAAA8LxwtsjaNZqeMZ3D1oIljvRh7gY%3DK71AEHJOlGtRH5jUv5xYG6cbrhBs8jl8Ft9YiAdl4GBKuBcLwF")
-
-            # name of the account/keyword
-            # query = company_name
-
-            # response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
-
-            # users = {u['id']: u for u in response.includes['users']}
-
-            # full_table = []
-
-            # for tweet in response.data:
-
-            #     language = tweet.lang
-            #     if language == "en":
-            #         element_table = []
-
-            #     # user
-            #         user = users[tweet.author_id]
-            #         username = user.username
-            #         element_table.append(username)
-
-            #     # tweet
-            #         tweet_id = tweet.id
-            #         element_table.append(tweet_id)
-
-            #         tweet_text = tweet.text
-            #         element_table.append(tweet_text)
-
-            #         full_table.append(element_table)
-            #     else:
-            #         continue
-
-            # full_pd = np.array(full_table)
-            # df = pd.DataFrame(full_pd)
-            # st.write(df)
-            #     # cleanup
-            # # df = df.drop(['Unnamed: 0'], axis=1)
-    
-        get_twitter_data()
         searched_status = True
-
-
-    # Temp
-    full_pd = pd.read_csv('output.csv')
-    df = pd.DataFrame(full_pd)
-    # Temp
+        # Temp: ORIGINAL CODE INCLUDES API
+        full_pd = pd.read_csv('output.csv')
+        df = pd.DataFrame(full_pd)
+        # Temp
 
     # Analysis
     start_analyser = st.checkbox('Start The Data Section!')
