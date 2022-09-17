@@ -117,10 +117,10 @@ with finance:
 
 # Attempts Check
 import geocoder
-import streamlit as st
 location = geocoder.ip("me")
 ip_address = location.ip
 st.write(ip_address)
+# columns: ip, access date, time passed
 
 ### Twitter
 def twitter():
@@ -158,8 +158,6 @@ def twitter():
             plt.show()
             st.pyplot()
             st.set_option('deprecation.showPyplotGlobalUse', False)
-
-            # wordcloud
 
         # Sentiment
         sentiment = st.container()
