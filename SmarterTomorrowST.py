@@ -84,10 +84,9 @@ with header:
     st.caption('**Description**: ')
     st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a click of a button!")
     # Convert Ticker Symbol to Name
-    if ticker_longName == True:
-        ticker_symbol = yf.Ticker(symbol)
-        company_name = ticker_symbol.info['longName']
-        st.header(company_name)
+    ticker_symbol = yf.Ticker(symbol)
+    company_name = ticker_symbol.info['longName']
+    st.header(company_name)
 
 # Financial Data
 finance = st.container()
@@ -117,21 +116,61 @@ with finance:
 
 # Attempts Check
 import geocoder
+import streamlit as st
 location = geocoder.ip("me")
 ip_address = location.ip
 st.write(ip_address)
-# columns: ip, access date, time passed
 
 ### Twitter
 def twitter():
-    #Twitter API input
+
+    # Twitter API input
     twitter_section = st.header("Twitter")
     with twitter_section:
-        searched_status = True
-        # Temp: ORIGINAL CODE INCLUDES API
-        full_pd = pd.read_csv('output.csv')
+        searched_status = False
+        token_input = st.text_input("Enter the token for the Twitter API.")
+        api_submit = st.checkbox("Submit")
+
+        # API process
+        token_input_converted = str(token_input)
+        client = tweepy.Client(bearer_token= token_input_converted)
+
+        # name of the account/keyword
+        query = company_name
+
+        response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
+
+        users = {u['id']: u for u in response.includes['users']}
+
+        full_table = []
+
+        for tweet in response.data:
+
+            language = tweet.lang
+            if language == "en":
+                element_table = []
+
+            # user
+                user = users[tweet.author_id]
+                username = user.username
+                element_table.append(username)
+
+            # tweet
+                tweet_id = tweet.id
+                element_table.append(tweet_id)
+
+                tweet_text = tweet.text
+                element_table.append(tweet_text)
+
+                full_table.append(element_table)
+            else:
+                continue
+
+        full_pd = np.array(full_table)
         df = pd.DataFrame(full_pd)
-        # Temp
+        st.write(df)
+        st.warning("If you continue, the form will be closed!")
+        searched_status = True
 
     # Analysis
     start_analyser = st.checkbox('Start The Data Section!')
@@ -150,7 +189,7 @@ def twitter():
 
         dataset = st.container()
         with dataset: 
-            text = " ".join(i for i in df["tweet_text"])
+            tweet_text = " ".join(i for i in df["tweet_text"])
             stopwords = set(STOPWORDS)
             wordcloud = WordCloud(stopwords=stopwords, background_color="white").generate(text)
             plt.imshow(wordcloud, interpolation='bilinear')
@@ -158,6 +197,8 @@ def twitter():
             plt.show()
             st.pyplot()
             st.set_option('deprecation.showPyplotGlobalUse', False)
+
+            # wordcloud
 
         # Sentiment
         sentiment = st.container()
