@@ -5,37 +5,24 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import yfinance as yf
 import tweepy
-import config
-import wordcloud
 from wordcloud import WordCloud
-from wordcloud import ImageColorGenerator
 from wordcloud import STOPWORDS
 import nltk
 nltk.download('vader_lexicon')
-from nltk.tokenize import word_tokenize
-from nltk.tokenize import RegexpTokenizer
-from nltk.probability import FreqDist
 from nltk.sentiment import SentimentIntensityAnalyzer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk.corpus import twitter_samples
-import tqdm
-from tqdm.notebook import tqdm
-import transformers
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
-import scipy
 from scipy.special import softmax
 
 # Miscellaneous
     # Title & Favicon
-image = Image.open('favicon.ico')
 st.set_page_config(
 	layout="wide",  # Can be "centered" or "wide". In the future also "dashboard", etc.
 	initial_sidebar_state="expanded",  # Can be "auto", "expanded", "collapsed"
 	page_title="SmarterTomorrow - KAILINX",  # String or None. Strings get appended with "• Streamlit". 
-	page_icon=image,  # String, anything supported by st.image, or None.
 )
-    # Clear Menu Button
+    # Clear Menu Buttons
 st.markdown(""" <style>
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
@@ -43,7 +30,7 @@ footer {visibility: hidden;}
     # Disable legacy warnings
 st.set_option('deprecation.showPyplotGlobalUse', False)
     # CSV converter
-@st.cache
+@st.cache_data
 def convert_df(file):
     return file.to_csv().encode('utf-8')
     # Long Name Display
@@ -57,10 +44,9 @@ with sidebar:
     with search_form:
         symbol = st.text_input("Company Ticker Symbol (aka Stock Name)", placeholder='e.g. AMZN, AAPL')
         st.info("Find your Company's Ticker Symbol [Here](https://finance.yahoo.com/lookup/)")
-        # duration = st.selectbox("Choose a duration", ('Recent One Quater', 'Recent Two Quaters', 'Recent Year', 'Recent Two Year'))
         selected_apis = st.multiselect('Select APIs', ['Twitter', 'Another Platform'], default='Twitter')
         analyser = st.selectbox("Choose an Analyser", ('VADER: Accurate & Fast', 'RoBERTa: Premium Accuracy & Very Slow'))
-        checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Financial Advisor!")
+        checkbox_val = st.checkbox("I agree to the Terms & Conditions, and that this is not a Professional and Licensed Financial Advisor!")
         searched = st.form_submit_button("Search")
         if searched:
             if 1 <= len(symbol) <= 5 and checkbox_val == True:
@@ -83,8 +69,6 @@ with header:
     st.title('SmarterTomorrow')
     st.caption('**Description**: ')
     st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a click of a button!")
-    # Convert Ticker Symbol to Name
-    ticker_symbol = yf.Ticker(symbol)
 
 # Financial Data
 finance = st.container()
@@ -112,63 +96,59 @@ with finance:
         plt.ylabel('Closing Price', fontweight='bold')
         st.pyplot()
 
-# Attempts Check
-import geocoder
-import streamlit as st
-location = geocoder.ip("me")
-ip_address = location.ip
-st.write(ip_address)
-
 ### Twitter
 def twitter():
-
-    # Twitter API input
+    #Twitter API input
     twitter_section = st.header("Twitter")
     with twitter_section:
-        searched_status = False
-        token_input = st.text_input("Enter the token for the Twitter API.")
-        api_submit = st.checkbox("Submit")
+        @st.cache
+        def get_twitter_data():
+            client = tweepy.Client(bearer_token= "AAAAAAAAAAAAAAAAAAAAAJZ7fAEAAAAARa39oRDrk66iFCpmAdiuAow8n1k%3DB5xoll4S70iUOrZV5aSaux3XbFTddGyNw7y6JA9C2SqdDMhL18")
 
-        # API process
-        token_input_converted = str(token_input)
-        client = tweepy.Client(bearer_token= token_input_converted)
+            # name of the account/keyword
+            query = "Apple"
 
-        # name of the account/keyword
-        query = company_name
+            response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
 
-        response = client.search_recent_tweets(query=query, max_results=100, tweet_fields=["created_at", "lang"], expansions=["author_id"])
+            users = {u['id']: u for u in response.includes['users']}
 
-        users = {u['id']: u for u in response.includes['users']}
+            full_table = []
 
-        full_table = []
+            for tweet in response.data:
 
-        for tweet in response.data:
+                language = tweet.lang
+                if language == "en":
+                    element_table = []
 
-            language = tweet.lang
-            if language == "en":
-                element_table = []
+                # user
+                    user = users[tweet.author_id]
+                    username = user.username
+                    element_table.append(username)
 
-            # user
-                user = users[tweet.author_id]
-                username = user.username
-                element_table.append(username)
+                # tweet
+                    tweet_id = tweet.id
+                    element_table.append(tweet_id)
 
-            # tweet
-                tweet_id = tweet.id
-                element_table.append(tweet_id)
+                    tweet_text = tweet.text
+                    element_table.append(tweet_text)
 
-                tweet_text = tweet.text
-                element_table.append(tweet_text)
+                    full_table.append(element_table)
+                else:
+                    continue
 
-                full_table.append(element_table)
-            else:
-                continue
-
-        full_pd = np.array(full_table)
-        df = pd.DataFrame(full_pd)
-        st.write(df)
-        st.warning("If you continue, the form will be closed!")
+            full_pd = np.array(full_table)
+            df = pd.DataFrame(full_pd)
+            st.write(df)
+                # cleanup
+            # df = df.drop(['Unnamed: 0'], axis=1)
+        get_twitter_data()
         searched_status = True
+
+
+    # Temp
+    full_pd = pd.read_csv('output.csv')
+    df = pd.DataFrame(full_pd)
+    # Temp
 
     # Analysis
     start_analyser = st.checkbox('Start The Data Section!')
@@ -181,13 +161,15 @@ def twitter():
             # view
             if st.checkbox('Show full raw data'):
                 st.subheader('Raw data')
-                st.write(df)
+                st.write(df[['username', 'tweet_id', 'tweet_text']])
             st.subheader("Random samples of data")
-            st.write(df.sample(n=3))
+            st.write(df[['username', 'tweet_id', 'tweet_text']].sample(n=3))
 
+
+        # wordcloud
         dataset = st.container()
         with dataset: 
-            tweet_text = " ".join(i for i in df["tweet_text"])
+            text = " ".join(i for i in df["tweet_text"])
             stopwords = set(STOPWORDS)
             wordcloud = WordCloud(stopwords=stopwords, background_color="white").generate(text)
             plt.imshow(wordcloud, interpolation='bilinear')
@@ -195,8 +177,6 @@ def twitter():
             plt.show()
             st.pyplot()
             st.set_option('deprecation.showPyplotGlobalUse', False)
-
-            # wordcloud
 
         # Sentiment
         sentiment = st.container()
@@ -222,7 +202,7 @@ def twitter():
 
                     if st.checkbox('Show full data table with VADER values'):
                         st.subheader('Full Table With VADER')
-                        st.write(dfV.head())
+                        st.write(dfV)
                         vader_csv = convert_df(dfV)
                         st.download_button(
                             "Press to Download",
@@ -260,7 +240,7 @@ def twitter():
                     #results
                     vader_mean_str = str(vader_mean)
                     vader_cut_str = vader_mean_str[:6]
-                    st.warning("This is not a Financial Advisor")
+                    st.warning("This is not a Professional and Licensed Financial Advisor")
                     if vader_mean <= -0.5:
                         st.subheader("Your Final Sentiment Is: " + vader_cut_str)
                         st.subheader("It's very likely that the company value will soon been DECREASING at a rapid rate!!! Be Careful!")
@@ -280,8 +260,6 @@ def twitter():
                 if st.checkbox("Start Analysing!"): 
                     MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
                     tokenizer = AutoTokenizer.from_pretrained(MODEL)
-                    # from tensorflow import BertTokenizer
-                    # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", do_lower_case = True)
                     model = AutoModelForSequenceClassification.from_pretrained(MODEL)
 
                     # Process
@@ -317,7 +295,7 @@ def twitter():
                     # First back up the values in 'dfR'
                     if st.checkbox('Show full data table with RoBERTa values'):
                         st.subheader('Full Table With RoBERTa')
-                        st.write(dfR.head())
+                        st.write(dfR)
                         vader_csv = convert_df(dfR)
                         st.download_button(
                             "Press to Download",
@@ -354,7 +332,7 @@ def twitter():
                     #results
                     roberta_mean_str = str(roberta_mean)
                     roberta_cut_str = roberta_mean_str[:6]
-                    st.warning("This is not a Financial Advisor")
+                    st.warning("This is not a Professional and Licensed Financial Advisor")
                     if roberta_mean <= -0.5:
                         st.subheader("Your Final Sentiment Is: " + roberta_cut_str)
                         st.subheader("It's very likely that the company value will soon been DECREASING at a rapid rate!!! Be Careful!")
@@ -380,9 +358,7 @@ def twitter():
     elif searched_status == False and analyser == False:
         st.write("")
 
-### Another Platform
-
-
+# Other Platforms
 if ('Twitter' in selected_apis) == True:
     twitter()
 elif ('Another Platform' in selected_apis) == True:
