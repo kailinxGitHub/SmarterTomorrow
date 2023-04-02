@@ -30,7 +30,6 @@ footer {visibility: hidden;}
     # Disable legacy warnings
 st.set_option('deprecation.showPyplotGlobalUse', False)
     # CSV converter
-@st.cache_data
 def convert_df(file):
     return file.to_csv().encode('utf-8')
     # Long Name Display
