@@ -85,7 +85,6 @@ with header:
     st.caption("SmarterTomorrow is an app that allows the users to filter tweets involving their researching target company and get stats from the data at a click of a button!")
     # Convert Ticker Symbol to Name
     ticker_symbol = yf.Ticker(symbol)
-    st.header(company_name)
 
 # Financial Data
 finance = st.container()
