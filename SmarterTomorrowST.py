@@ -14,6 +14,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from transformers import AutoModelForSequenceClassification
 from transformers import AutoTokenizer
 from scipy.special import softmax
+import matplotlib.pyplot as plt
 
 # Miscellaneous
     # Title & Favicon
