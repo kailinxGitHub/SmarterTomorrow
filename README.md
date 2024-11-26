@@ -32,9 +32,9 @@ SmarterTomorrow is a Python-based application designed to help users analyze twe
    env\Scripts\activate # For Windows
    ```
 4. Install dependencies
-  ```
-  pip install -r requirements.txt
-  ```
+   ```
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 Set up your target company by specifying search keywords in the configuration file.
